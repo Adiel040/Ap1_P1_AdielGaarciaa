@@ -2,11 +2,14 @@ using Ap1_P1_AdielGaarciaa.Components;
 
 namespace Ap1_P1_AdielGaarciaa
 {
+
     public class Program
     {
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddBlazorBootstrap();
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
