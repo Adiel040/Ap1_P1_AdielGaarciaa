@@ -1,0 +1,114 @@
+﻿@page "/Articulos/Edit"
+@page "/Articulos/Edit/{ArticuloId:int}"
+@using Ap1_P1_AdielGaarciaa.Services
+@inject ArticulosServices articulosServices
+
+<EditForm Model="ArticuloModel" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="card shadow-lg border-0 rounded" style="background-color: #f8f9fa;">
+        <div class="card-header bg-primary text-white" style="text-align: center;">
+            <h3>Editar Artículo</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="ArticuloId" class="form-label">ArticuloId:</label>
+                    <div class="input-group">
+                        <div style="width: 40%; height: 1em;">
+                            <InputNumber @bind-Value="ArticuloModel.ArticuloId" class="form-control" style="font-size: 0.8em;" aria-describedby="BotonBuscar" />
+                            <ValidationMessage For="@(() => ArticuloModel.ArticuloId)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="Descripcion" class="form-label">Descripción:</label>
+                <InputText @bind-Value="ArticuloModel.Descripcion" class="form-control" />
+                <ValidationMessage For="@(() => ArticuloModel.Descripcion)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Costo" class="form-label">Costo:</label>
+                <InputNumber @bind-Value="ArticuloModel.Costo" class="form-control" />
+                <ValidationMessage For="@(() => ArticuloModel.Costo)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Ganancia" class="form-label">Ganancia:</label>
+                <InputNumber @bind-Value="ArticuloModel.Ganancia" class="form-control" />
+                <ValidationMessage For="@(() => ArticuloModel.Ganancia)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="Precio" class="form-label">Precio:</label>
+                <InputNumber @bind-Value="ArticuloModel.Precio" class="form-control" />
+                <ValidationMessage For="@(() => ArticuloModel.Precio)" />
+            </div>
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-center mt-3">
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus"></span> Nuevo </button>
+                <button type="submit" class="btn btn-outline-success ml-2"><span class="bi bi-check-circle-fill"></span> Guardar </button>
+                <span class="bi bi-arrow-bar-left"></span> Retroceder 
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ArticuloId { get; set; }
+
+    Articulos ArticuloModel { get; set; } = new Models.Articulos();
+    public bool Existe { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ArticuloId != 0)
+        {
+            await Buscar();
+        }
+    }
+
+    public async Task Buscar()
+    {
+        Existe = false;
+        var encontrado = await articulosServices.Buscar(ArticuloId);
+
+        if (encontrado != null)
+        {
+            ArticuloModel = encontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task Guardar()
+    {
+        if (Validar())
+        {
+            return;
+        }
+
+        var guardado = await articulosServices.Guardar(ArticuloModel);
+        if (guardado)
+        {
+            Nuevo();
+        }
+    }
+
+    public void Nuevo()
+    {
+        ArticuloModel = new Models.Articulos();
+        Existe = false;
+    }
+
+    public bool Validar()
+    {
+        Existe = articulosServices.Listar(a => a.Descripcion!.ToLower() == ArticuloModel.Descripcion!.ToLower() && a.ArticuloId != ArticuloModel.ArticuloId).Any();
+        return Existe;
+    }
+}
