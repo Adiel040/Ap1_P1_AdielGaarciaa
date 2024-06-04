@@ -1,0 +1,167 @@
+﻿@page "/Articulo/Index"
+@page "/Articulo/Index/{ArticuloId:int}"
+@inject ArticulosServices articuloService
+@inject RegistroServicioService registroServicioService 
+
+<PageTitle>Consulta Artículos</PageTitle>
+
+<EditForm Model="ListaArticulos" class="border shadow-lg p-3 rounded">
+    <div class="card-header bg-primary text-white text-center py-2 rounded">
+        <h3 style="font-weight: bold;" class="mb-0 font-weight-bold">Consulta Artículos</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3 align-items-end">
+            @*Filtro*@
+            <div class="col-md-3">
+                <label for="Filtro" class="form-label">Filtrar por:</label>
+                <select @bind="filtro" class="form-select">
+                    <option value="Id">ID</option>
+                    <option value="Descripcion">Descripción</option>
+                </select>
+            </div>
+            @*Barra Busqueda*@
+            <div class="col-md-6">
+                <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+                <div class="input-group">
+                    <input @bind="valorFiltro" class="form-control" placeholder="Buscar" />
+                    <button @onclick="Buscar" class="btn btn-outline-primary" type="button">
+                        <span class="bi bi-search"></span> Buscar
+                    </button>
+                </div>
+            </div>
+            @*Boton Crear*@
+            <div class="col-md-3 text-end">
+                <a href="/Articulo/Create" class="btn btn-success" type="button"><span class="bi bi-floppy"></span> Crear </a>
+            </div>
+        </div>
+    </div>
+
+    @*Tabla*@
+    <table class="table table-bordered text-center">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Id</th>
+                <th>Descripción</th>
+                <th>Costo</th>
+                <th>Ganancia</th>
+                <th>Precio</th>
+                <th>Registrar Uso</th>
+                <th>Ver</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var articulo in ListaArticulos)
+            {
+                <tr>
+                    <td>@articulo.ArticuloId</td>
+                    <td>@articulo.Descripcion</td>
+                    <td>@articulo.Costo</td>
+                    <td>@articulo.Ganancia</td>
+                    <td>@articulo.Precio</td>
+                    <td>
+                        <button @onclick="() => MostrarFormularioRegistro(articulo.ArticuloId)" class="btn btn-primary">Registrar Uso</button>
+                    </td>
+                    <td>
+                        @*Boton Detalles*@
+                        <a href="/Articulo/Details/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-detalle">
+                            <span class="bi bi-info-circle-fill" style="font-size: 2rem;"></span>
+                        </a>
+                    </td>
+                    <td>
+                        @*Boton Editar*@
+                        <a href="/Articulo/Edit/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-editar">
+                            <span class="bi bi-marker-tip" style="font-size: 2rem;"></span>
+                        </a>
+                    </td>
+                    <td>
+                        @*Boton Eliminar*@
+                        <a href="/Articulo/Delete/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-eliminar">
+                            <span class="bi bi-dash-circle-fill" style="font-size: 2rem;"></span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</EditForm>
+
+@if (mostrarFormularioRegistro)
+{
+    <div class="modal" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Uso de Artículo</h5>
+                    <button type="button" class="btn-close" @onclick="() => mostrarFormularioRegistro = false"></button>
+                </div>
+                <div class="modal-body">
+                    <form @onsubmit="RegistrarUso">
+                        <div class="mb-3">
+                            <label for="servicio">Servicio:</label>
+                            <input type="text" class="form-control" @bind="servicio" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="detalle">Detalles:</label>
+                            <textarea class="form-control" @bind="detalle"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar Uso</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int ArticuloId { get; set; }
+    public List<Articulo> ListaArticulos = new List<Articulo>();
+    private string valorFiltro = "";
+    private string filtro = "Id";
+    private bool mostrarFormularioRegistro = false;
+    private int articuloIdSeleccionado;
+    private string servicio;
+    private string detalle;
+
+    protected override void OnInitialized()
+    {
+        ListaArticulos = articuloService.Listar(c => true);
+    }
+
+    public void Buscar()
+    {
+        
+    }
+
+    public void MostrarFormularioRegistro(int articuloId)
+    {
+        articuloIdSeleccionado = articuloId;
+        mostrarFormularioRegistro = true;
+    }
+
+    public async Task RegistrarUso()
+    {
+        if (!string.IsNullOrWhiteSpace(servicio) && !string.IsNullOrWhiteSpace(detalle))
+        {
+            
+            var exito = await registroServicioService.RegistrarUsoArticulo(articuloIdSeleccionado, servicio, detalle);
+            if (exito)
+            {
+                
+                ListaArticulos = articuloService.Listar(c => true);
+                
+                mostrarFormularioRegistro = false;
+            }
+            else
+            {
+                
+            }
+        }
+        else
+        {
+            
+        }
+    }
+}
