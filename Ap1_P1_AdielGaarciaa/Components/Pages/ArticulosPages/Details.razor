@@ -1,0 +1,60 @@
+﻿@page "/Articulo/Details"
+@page "/Articulo/Details/{ArticuloId:int}"
+@using Ap1_P1_AdielGaarciaa.Models
+@using Ap1_P1_AdielGaarciaa.Services
+@inject ArticulosServices articulosServices
+@inject NavigationManager navigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Detalles del Artículo</PageTitle>
+@if (Articulos != null)
+{
+    <div class="container">
+        <div class="card shadow-header">
+            <div class="card-header  bg-primary text-white text-center py-2 rounded">
+                <h3 class="text-center"><strong>Detalles del Artículo</strong></h3>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><strong>Artículo Id:</strong> @Articulos.ArticuloId</li>
+                                <li><strong>Descripción:</strong> @Articulos.Descripcion</li>
+                                <li><strong>Costo:</strong> @Articulos.Costo</li>
+                                <li><strong>Ganancia:</strong> @Articulos.Ganancia</li>
+                                <li><strong>Precio:</strong> @Articulos.Precio</li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i> Volver</button>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>Artículo no encontrado.</p>
+}
+
+
+@code {
+    [Parameter]
+    public int ArticuloId { get; set; }
+    public Articulos? Articulos { get; set; } = new Articulos();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Articulos = await articulosService.Buscar(ArticuloId);
+    }
+    public void Volver()
+    {
+        navigationManager.NavigateTo("/Articulo/Index");
+    }
+}
