@@ -21,49 +21,49 @@ namespace Ap1_P1_AdielGaarciaa.Services
                 .AnyAsync(a => a.ArticuloId == articuloId);
         }
 
-        private async Task<bool> Insertar(Articulos articulo)
+        private async Task<bool> Insertar(Articulos articulos)
         {
-            _context.Articulos.Add(articulo);
+            _context.Articulos.Add(articulos);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        private async Task<bool> Modificar(Articulos articulo)
+        private async Task<bool> Modificar(Articulos articulos)
         {
-            var articuloOriginal = await _context.Articulos.AsNoTracking().FirstOrDefaultAsync(a => a.ArticuloId == articulo.ArticuloId);
+            var articuloOriginal = await _context.Articulos.AsNoTracking().FirstOrDefaultAsync(a => a.ArticuloId == articulos.ArticuloId);
             if (articuloOriginal != null)
             {
-                _context.Update(articulo);
+                _context.Update(articulos);
                 return await _context.SaveChangesAsync() > 0;
             }
             return false;
         }
 
-        public async Task<bool> Guardar(Articulos articulo)
+        public async Task<bool> Guardar(Articulos articulos)
         {
-            if (await ExisteDescripcion(articulo.Descripcion, articulo.ArticuloId))
+            if (await ExisteDescripcion(articulos.Descripcion, articulos.ArticuloId))
             {
                 return false;
             }
 
-            if (!await Existe(articulo.ArticuloId))
+            if (!await Existe(articulos.ArticuloId))
             {
-                return await Insertar(articulo);
+                return await Insertar(articulos);
             }
             else
             {
-                return await Modificar(articulo);
+                return await Modificar(articulos);
             }
         }
 
         public async Task<bool> Eliminar(int id)
         {
-            var articulo = await _context.Articulos.FirstOrDefaultAsync(a => a.ArticuloId == id);
-            if (articulo == null)
+            var articulos = await _context.Articulos.FirstOrDefaultAsync(a => a.ArticuloId == id);
+            if (articulos == null)
             {
                 return false;
             }
 
-            _context.Articulos.Remove(articulo);
+            _context.Articulos.Remove(articulos);
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -74,12 +74,11 @@ namespace Ap1_P1_AdielGaarciaa.Services
                 .FirstOrDefaultAsync(a => a.ArticuloId == id);
         }
 
-        public List<Articulos> Listar(Expression<Func<Articulos, bool>> criterio)
+        public async Task<List<Articulos>> Listar(Expression<Func<Articulos, bool>> criterio)
         {
-            return _context.Articulos
-                .AsNoTracking()
+            return await _context.Articulos.AsNoTracking()
                 .Where(criterio)
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task<bool> ExisteDescripcion(string descripcion, int? idArticulo = null)
