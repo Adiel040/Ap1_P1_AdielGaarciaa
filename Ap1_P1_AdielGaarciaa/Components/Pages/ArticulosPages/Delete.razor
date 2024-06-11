@@ -1,90 +1,98 @@
-﻿@page "/Articulo/Delete"
-@page "/Articulo/Delete/{ArticuloId:int}"
-@using Ap1_P1_AdielGaarciaa.Services
-@using static Ap1_P1_AdielGaarciaa.Components.Pages.ArticulosPages.Create
-@inject ArticulosServices articulosService
-@inject NavigationManager navigationManager
-@inject NotificationService NotificationService
+﻿@page "/Delete/Articulos/{articulosId:int}"
+@page "/Delete/Articulos"
 @rendermode InteractiveServer
+@inject ArticulosServices articulosService
+@inject NavigationManager navigation
 
-<PageTitle>Eliminar Artículo</PageTitle>
-@if (Articulo != null)
-{
-    <div class="container">
-        <div class="card shadow-header">
+<PageTitle>Eliminar art&iacute;culo</PageTitle>
 
-            <div class="card-header  bg-primary text-white text-center py-2 rounded">
-                <h3><strong>Eliminar Artículo</strong></h3>
-            </div>
-            <div class="card-header">
-                <h3 class="text-danger">¿Estás seguro de que quieres eliminar el siguiente artículo?</h3>
-            </div>
+<div class="container">
+    <div class="card shadow-header">
+        <div class="card-header text-center py-2 rounded">
+            <h3><strong>Eliminar Artículo</strong></h3>
+        </div>
+        <Toasts class="p-3" Messages="MensajeToast" Placement="ToastsPlacement.TopRight" />
+        <div class="card-header">
+            <h3 class="text-danger">¿Est&aacute;s seguro de que quieres eliminar este Art&iacute;culo?</h3>
+        </div>
 
+        @if (articulos != null)
+        {
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card shadow-lg">
                             <div class="card-header">
-                                <h3 class="text-center"><strong>Datos del artículo</strong></h3>
+                                <h3 class="text-center"><strong>Datos del Artículo</strong></h3>
                             </div>
                             <div class="card-body">
-                                <div class="border-primary border-2 borde">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-8">
-                                                <ul class="list-unstyled">
-                                                    <li><strong>Artículo Id:</strong> @Articulo.ArticuloId</li>
-                                                    <li><strong>Descripción:</strong> @Articulo.Descripcion</li>
-                                                    <li><strong>Costo:</strong> @Articulo.Costo</li>
-                                                    <li><strong>Ganancia:</strong> @Articulo.Ganancia</li>
-                                                    <li><strong>Precio:</strong> @Articulo.Precio</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ul class="list-unstyled">
+                                    <li><strong>Art&iacute;culo Id:</strong> @articulos.ArticuloId</li>
+                                    <li><strong>Descripci&oacute;n:</strong> @articulos.Descripcion</li>
+                                    <li><strong>Costo:</strong> @articulos.Costo</li>
+                                    <li><strong>Ganancia:</strong> @articulos.Ganancia</li>
+                                    <li><strong>Precio:</strong> @articulos.Precio</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="card-footer">
-                @*Botón Eliminar*@
-                <button type="button" class="btn btn-outline-danger" @onclick="EliminarArticulo"><i class="bi bi-trash-fill"></i> Eliminar</button>
-                @*Botón Volver*@
-                <button type="button" class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i> Volver</button>
-            </div>
-
+        }
+        <div class="card-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" @onclick="Volver"><Icon Name="IconName.Arrow90DegLeft" /> Volver</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="EliminarArticulo"><Icon Name="IconName.Trash" /> Eliminar</button>
         </div>
     </div>
-}
-else
+</div>
+
+@if (articulos == null)
 {
-    <p>Artículo no encontrado.</p>
+    <div>Artículo no encontrado.</div>
 }
 
 @code {
     [Parameter]
-    public int ArticuloId { get; set; }
-    public Articulos? Articulo { get; set; } = new Articulos();
+    public int articulosId { get; set; }
+    public Articulos articulos { get; set; } = new Articulos();
+    public List<ToastMessage> MensajeToast { get; set; } = new List<ToastMessage>();
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
+       => new ToastMessage
+           {
+               Type = toastType,
+               Title = "Notificación",
+               HelpText = $"{DateTime.Now}",
+               Message = mensaje,
+           };
+
+    private void Mensaje(ToastType toastType, string mensaje)
+    {
+        MensajeToast.Add(CreateToastMessage(toastType, mensaje));
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        if (ArticuloId != 0)
-        {
-            Articulo = await articulosService.Buscar(ArticuloId);
-        }
+        if (articulosId > 0)
+            articulos = await articulosService.Buscar(articulosId);
     }
 
     public async Task EliminarArticulo()
     {
-        var eliminado = await articulosService.Eliminar(Articulo.ArticuloId);
-        Volver();
+        var eliminar = await articulosService.Eliminar(articulos.ArticuloId);
+        if (eliminar)
+        {
+            Volver();
+            Mensaje(ToastType.Success, "Artículo eliminado correctamente.");
+        }
+        else
+        {
+            Mensaje(ToastType.Danger, "El artículo no se pudo eliminar.");
+        }
     }
 
     public void Volver()
     {
-        navigationManager.NavigateTo("/Articulo/Index");
+        navigation.NavigateTo("/Index");
     }
 }
