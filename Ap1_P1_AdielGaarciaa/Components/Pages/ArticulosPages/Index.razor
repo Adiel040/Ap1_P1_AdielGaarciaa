@@ -1,58 +1,61 @@
-﻿@page "/Articulo/Index"
-@page "/Articulo/Index/{ArticuloId:int}"
-@inject ArticulosServices articuloService
-@inject RegistroServicioService registroServicioService 
+﻿@page "/Index"
+@rendermode InteractiveServer
+@inject ArticulosServices articulosService
+@inject NavigationManager navigation
 
-<PageTitle>Consulta Artículos</PageTitle>
+<PageTitle>Art&iacute;culos</PageTitle>
 
-<EditForm Model="ListaArticulos" class="border shadow-lg p-3 rounded">
-    <div class="card-header bg-primary text-white text-center py-2 rounded">
-        <h3 style="font-weight: bold;" class="mb-0 font-weight-bold">Consulta Artículos</h3>
-    </div>
-    <div class="card-body">
-        <div class="row mb-3 align-items-end">
-            @*Filtro*@
-            <div class="col-md-3">
-                <label for="Filtro" class="form-label">Filtrar por:</label>
-                <select @bind="filtro" class="form-select">
-                    <option value="Id">ID</option>
-                    <option value="Descripcion">Descripción</option>
-                </select>
-            </div>
-            @*Barra Busqueda*@
-            <div class="col-md-6">
-                <label for="ValorFiltro" class="form-label">Búsqueda:</label>
-                <div class="input-group">
-                    <input @bind="valorFiltro" class="form-control" placeholder="Buscar" />
-                    <button @onclick="Buscar" class="btn btn-outline-primary" type="button">
-                        <span class="bi bi-search"></span> Buscar
-                    </button>
-                </div>
-            </div>
-            @*Boton Crear*@
-            <div class="col-md-3 text-end">
-                <a href="/Articulo/Create" class="btn btn-success" type="button"><span class="bi bi-floppy"></span> Crear </a>
-            </div>
+
+@*Header*@
+<div class="card-header">
+    <h1 class="mb-0"><strong>Art&iacute;culos</strong></h1>
+</div>
+
+@*Filtro*@
+<div class="card-body">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label"><strong>Filtrar por:</strong></label>
+            <select @bind="filtro" class="form-select">
+                <option value="id">Art&iacute;culoId</option>
+                <option value="descripcion">Descripci&oacute;n</option>
+                <option value="costo">Costo</option>
+                <option value="ganancia">Ganancia</option>
+                <option value="precio">Precio</option>
+            </select>
         </div>
-    </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label"><strong>B&uacute;squeda: </strong></label>
+            <div class="input-group">
+                <input @bind="ValorFiltro" class="form-control" placeholder="Buscar" />
+                <button type="button" class="btn btn-primary" @onclick="Buscar"><Icon Name="IconName.Search"></Icon> Buscar</button>
 
-    @*Tabla*@
-    <table class="table table-bordered text-center">
-        <thead class="bg-primary text-white">
+            </div>
+
+        </div>
+
+    </div>
+    <div class="mb-3 d-flex justify-content-start">
+        <a href="/ArticulosPages/Create" class="btn btn-success"><Icon Name="IconName.Plus"></Icon> Create</a>
+    </div>
+</div>
+
+@*Body*@
+<div class="card-body">
+    <table class="table table-striped">
+        <thead class="thead-dark">
             <tr>
-                <th>Id</th>
-                <th>Descripción</th>
+                <th>Art&iacute;culoId</th>
+                <th>Descripci&oacute;n</th>
                 <th>Costo</th>
                 <th>Ganancia</th>
                 <th>Precio</th>
-                <th>Registrar Uso</th>
-                <th>Ver</th>
-                <th>Editar</th>
+                <th>Modificar</th>
                 <th>Eliminar</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var articulo in ListaArticulos)
+            @foreach (var articulo in Filtrados)
             {
                 <tr>
                     <td>@articulo.ArticuloId</td>
@@ -61,107 +64,69 @@
                     <td>@articulo.Ganancia</td>
                     <td>@articulo.Precio</td>
                     <td>
-                        <button @onclick="() => MostrarFormularioRegistro(articulo.ArticuloId)" class="btn btn-primary">Registrar Uso</button>
+                        <a href="/ArticulosPages/Edit/@articulo.ArticuloId" class="btn btn-primary"><Icon Name="IconName.Pencil"></Icon></a>
                     </td>
-                    <td>
-                        @*Boton Detalles*@
-                        <a href="/Articulo/Details/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-detalle">
-                            <span class="bi bi-info-circle-fill" style="font-size: 2rem;"></span>
-                        </a>
-                    </td>
-                    <td>
-                        @*Boton Editar*@
-                        <a href="/Articulo/Edit/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-editar">
-                            <span class="bi bi-marker-tip" style="font-size: 2rem;"></span>
-                        </a>
-                    </td>
-                    <td>
-                        @*Boton Eliminar*@
-                        <a href="/Articulo/Delete/@articulo.ArticuloId" style="border: none; background-color: transparent;" class="btn-eliminar">
-                            <span class="bi bi-dash-circle-fill" style="font-size: 2rem;"></span>
-                        </a>
+                    <td class="text-center">
+                        <a href="/Delete/Articulos/@articulo.ArticuloId" class="btn btn-danger"><Icon Name="IconName.Trash"></Icon></a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-</EditForm>
+</div>
 
-@if (mostrarFormularioRegistro)
-{
-    <div class="modal" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Registrar Uso de Artículo</h5>
-                    <button type="button" class="btn-close" @onclick="() => mostrarFormularioRegistro = false"></button>
-                </div>
-                <div class="modal-body">
-                    <form @onsubmit="RegistrarUso">
-                        <div class="mb-3">
-                            <label for="servicio">Servicio:</label>
-                            <input type="text" class="form-control" @bind="servicio" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="detalle">Detalles:</label>
-                            <textarea class="form-control" @bind="detalle"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Registrar Uso</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+
 
 @code {
-    [Parameter]
-    public int ArticuloId { get; set; }
-    public List<Articulo> ListaArticulos = new List<Articulo>();
-    private string valorFiltro = "";
-    private string filtro = "Id";
-    private bool mostrarFormularioRegistro = false;
-    private int articuloIdSeleccionado;
-    private string servicio;
-    private string detalle;
+    public List<Articulos> articulos { get; set; } = new List<Articulos>();
+    public List<Articulos> Filtrados { get; set; } = new List<Articulos>();
+    public string filtro { get; set; } = "id";
+    public string ValorFiltro { get; set; } = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        ListaArticulos = articuloService.Listar(c => true);
+        articulos = await articulosService.Listar(a => true);
+        Filtrados = articulos;
     }
 
-    public void Buscar()
+    private void Buscar()
     {
-        
-    }
-
-    public void MostrarFormularioRegistro(int articuloId)
-    {
-        articuloIdSeleccionado = articuloId;
-        mostrarFormularioRegistro = true;
-    }
-
-    public async Task RegistrarUso()
-    {
-        if (!string.IsNullOrWhiteSpace(servicio) && !string.IsNullOrWhiteSpace(detalle))
+        if (string.IsNullOrEmpty(ValorFiltro))
         {
-            
-            var exito = await registroServicioService.RegistrarUsoArticulo(articuloIdSeleccionado, servicio, detalle);
-            if (exito)
-            {
-                
-                ListaArticulos = articuloService.Listar(c => true);
-                
-                mostrarFormularioRegistro = false;
-            }
-            else
-            {
-                
-            }
+            Filtrados = articulos;
         }
         else
         {
-            
+            switch (filtro)
+            {
+                case "id":
+                    if (int.TryParse(ValorFiltro, out int id))
+                    {
+                        Filtrados = articulos.Where(a => a.ArticuloId == id).ToList();
+                    }
+                    break;
+                case "descripcion":
+                    Filtrados = articulos.Where(a => a.Descripcion.Contains(ValorFiltro, StringComparison.OrdinalIgnoreCase)).ToList();
+                    break;
+                case "costo":
+                    if (decimal.TryParse(ValorFiltro, out decimal costo))
+                    {
+                        Filtrados = articulos.Where(a => a.Costo == costo).ToList();
+                    }
+                    break;
+                case "ganancia":
+                    if (decimal.TryParse(ValorFiltro, out decimal ganancia))
+                    {
+                        Filtrados = articulos.Where(a => a.Ganancia == ganancia).ToList();
+                    }
+                    break;
+                case "precio":
+                    if (decimal.TryParse(ValorFiltro, out decimal precio))
+                    {
+                        Filtrados = articulos.Where(a => a.Precio == precio).ToList();
+                    }
+                    break;
+            }
         }
     }
 }
