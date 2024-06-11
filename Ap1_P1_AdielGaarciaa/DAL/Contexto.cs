@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-using Microsoft.EntityFrameworkCore;
 using Ap1_P1_AdielGaarciaa.Models;
 namespace Ap1_P1_AdielGaarciaa.DAL
 {
